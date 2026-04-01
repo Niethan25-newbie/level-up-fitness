@@ -295,6 +295,17 @@ body {
 .card-body  { background: transparent; color: var(--text-secondary); }
 .card-title { color: var(--text-primary) !important; }
 .card-text  { color: var(--text-secondary) !important; }
+.card-body p {
+    color: var(--text-secondary) !important;
+}
+.card-body h6,
+.card-body h5,
+.card-body small {
+    color: inherit;
+}
+.card-body small.text-muted {
+    color: var(--text-muted) !important;
+}
 .card-header {
     background: var(--bg-elevated) !important;
     border-bottom: 1px solid var(--border-subtle) !important;
@@ -303,6 +314,11 @@ body {
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+}
+
+.card-header h5,
+.card-header p {
+    color: var(--text-primary) !important;
 }
 .card-footer {
     background: var(--bg-elevated) !important;
@@ -606,7 +622,11 @@ body {
 .alert-info {
     background: rgba(255, 255, 255, 0.04);
     border-color: #888;
-    color: #888;
+    color: #cccccc !important;
+}
+
+.alert-info i {
+    color: #cccccc;
 }
 
 .alert-success {
@@ -828,4 +848,87 @@ body {
 .page-item.disabled .page-link {
     background: var(--bg-surface) !important;
     color: var(--text-muted) !important;
+}
+
+/* ==================== BOOTSTRAP OVERRIDES FOR DARK MODE ==================== */
+
+/* Override Bootstrap's .bg-light to match dark theme */
+.bg-light {
+    background: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Ensure text-muted has proper contrast */
+.text-muted,
+.text-muted * {
+    color: var(--text-muted) !important;
+}
+
+/* Ensure alert text is readable */
+.alert {
+    color: inherit;
+}
+
+.alert-info {
+    color: #cccccc !important;
+}
+
+.alert-info i {
+    color: inherit;
+}
+
+/* ==================== LOGIN PAGE STYLING ==================== */
+/* Override body color for login page to ensure text is readable on white background */
+.login-container body,
+.login-container {
+    color: #333333;
+}
+
+.login-box {
+    color: #333333;
+}
+
+.login-box .form-label {
+    color: #333333 !important;
+    font-weight: 600;
+}
+
+.login-box .form-check-label {
+    color: #333333 !important;
+}
+
+.login-box p {
+    color: #333333 !important;
+}
+
+.login-box h1 {
+    color: #667eea !important;
+}
+
+/* Login page alert styling */
+.login-box .alert {
+    color: #333333 !important;
+}
+
+.login-box .alert-danger {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #721c24 !important;
+}
+
+/* List group items should have proper contrast */
+.list-group-item {
+    background: var(--bg-surface) !important;
+    border-color: var(--border-subtle) !important;
+    color: var(--text-secondary) !important;
+}
+
+.list-group-item:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Ensure card body text is visible */
+.card-body p {
+    color: var(--text-secondary) !important;
 }
