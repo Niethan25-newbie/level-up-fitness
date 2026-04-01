@@ -56,13 +56,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = $params;
-    $countParams[] = (int)$itemsPerPage;
-    $countParams[] = (int)$offset;
-    $query .= " ORDER BY wp.created_at DESC LIMIT ? OFFSET ?";
+    $query .= " ORDER BY wp.created_at DESC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($countParams);
+    $stmt->execute($params);
     $plans = $stmt->fetchAll();
 
 } catch (Exception $e) {

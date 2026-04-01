@@ -37,13 +37,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = $params;
-    $countParams[] = (int)$itemsPerPage;
-    $countParams[] = (int)$offset;
-    $query .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
+    $query .= " ORDER BY created_at DESC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($countParams);
+    $stmt->execute($params);
     $gyms = $stmt->fetchAll();
 
 } catch (Exception $e) {

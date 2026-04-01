@@ -69,11 +69,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = array_merge($params, [(int)$itemsPerPage, (int)$offset]);
-    $query .= " GROUP BY m.member_id ORDER BY m.member_name ASC LIMIT ? OFFSET ?";
+    $query .= " GROUP BY m.member_id ORDER BY m.member_name ASC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($countParams);
+    $stmt->execute($params);
     $members = $stmt->fetchAll();
 
 } catch (Exception $e) {

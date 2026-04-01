@@ -68,13 +68,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = $params;
-    $countParams[] = (int)$itemsPerPage;
-    $countParams[] = (int)$offset;
-    $query .= " ORDER BY ts.session_date DESC, ts.session_time DESC LIMIT ? OFFSET ?";
+    $query .= " ORDER BY ts.session_date DESC, ts.session_time DESC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($countParams);
+    $stmt->execute($params);
     $sessions = $stmt->fetchAll();
 
 } catch (Exception $e) {
@@ -83,112 +80,143 @@ try {
 
 ?>
 
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h2>Training Sessions</h2>
-            <?php if ($_SESSION['user_type'] === 'admin' || $_SESSION['user_type'] === 'trainer'): ?>
-                <a href="add.php" class="btn btn-primary">+ New Session</a>
-            <?php endif; ?>
-        </div>
+<div class="container-fluid">
+    <div class="row">
+        <?php include dirname(dirname(dirname(__FILE__))) . '/includes/sidebar.php'; ?>
 
-        <!-- Search and Filters -->
-        <div class="card-body">
-            <form method="GET" class="filter-form">
-                <div class="filter-row">
-                    <input type="text" name="search" placeholder="Search by session name..." value="<?php echo htmlspecialchars($searchTerm); ?>" class="form-control">
-                    
-                    <select name="trainer" class="form-control">
-                        <option value="">All Trainers</option>
-                        <?php foreach ($trainers as $trainer): ?>
-                            <option value="<?php echo $trainer['trainer_id']; ?>" <?php echo $filterTrainer == $trainer['trainer_id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($trainer['trainer_name']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
 
-                    <select name="status" class="form-control">
-                        <option value="">All Status</option>
-                        <option value="Scheduled" <?php echo $filterStatus === 'Scheduled' ? 'selected' : ''; ?>>Scheduled</option>
-                        <option value="Ongoing" <?php echo $filterStatus === 'Ongoing' ? 'selected' : ''; ?>>Ongoing</option>
-                        <option value="Completed" <?php echo $filterStatus === 'Completed' ? 'selected' : ''; ?>>Completed</option>
-                        <option value="Cancelled" <?php echo $filterStatus === 'Cancelled' ? 'selected' : ''; ?>>Cancelled</option>
-                    </select>
-
-                    <button type="submit" class="btn btn-secondary">Filter</button>
-                    <a href="index.php" class="btn btn-light">Clear</a>
-                </div>
-            </form>
-        </div>
-
-        <?php if ($message): ?>
-            <div class="alert alert-<?php echo htmlspecialchars($message['type']); ?>">
-                <?php echo htmlspecialchars($message['text']); ?>
-            </div>
-        <?php endif; ?>
-
-        <!-- Sessions Table -->
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Session Name</th>
-                        <th>Trainer</th>
-                        <th>Date & Time</th>
-                        <th>Gym</th>
-                        <th>Attendees</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (count($sessions) > 0): ?>
-                        <?php foreach ($sessions as $session): ?>
-                            <tr>
-                                <td><strong><?php echo htmlspecialchars($session['session_name']); ?></strong></td>
-                                <td><?php echo htmlspecialchars($session['trainer_name'] ?? 'N/A'); ?></td>
-                                <td>
-                                    <?php echo date('M d, Y', strtotime($session['session_date'])); ?><br>
-                                    <small><?php echo date('H:i', strtotime($session['session_time'])); ?></small>
-                                </td>
-                                <td><?php echo htmlspecialchars($session['gym_name'] ?? 'N/A'); ?></td>
-                                <td>
-                                    <span class="badge"><?php echo $session['current_attendees']; ?>/<?php echo $session['max_capacity']; ?></span>
-                                </td>
-                                <td>
-                                    <span class="badge badge-<?php echo strtolower($session['status']); ?>">
-                                        <?php echo htmlspecialchars($session['status']); ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="view.php?id=<?php echo $session['session_id']; ?>" class="btn btn-sm btn-info">View</a>
-                                    <?php if ($_SESSION['user_type'] === 'admin' || ($_SESSION['user_type'] === 'trainer' && $_SESSION['user_id'] == $session['trainer_id'])): ?>
-                                        <a href="edit.php?id=<?php echo $session['session_id']; ?>" class="btn btn-sm btn-warning">Edit</a>
-                                        <a href="delete.php?id=<?php echo $session['session_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this session?');">Delete</a>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="7" class="text-center text-muted">No sessions found</td>
-                        </tr>
+            <div class="page-header mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h1><i class="fas fa-calendar-alt"></i> Training Sessions</h1>
+                    <?php if ($_SESSION['user_type'] === 'admin' || $_SESSION['user_type'] === 'trainer'): ?>
+                        <a href="add.php" class="btn btn-primary">+ New Session</a>
                     <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <?php if ($totalPages > 1): ?>
-            <div class="pagination">
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="?page=<?php echo $i; ?>&search=<?php echo urlencode($searchTerm); ?>&trainer=<?php echo urlencode($filterTrainer); ?>&status=<?php echo urlencode($filterStatus); ?>" 
-                       class="<?php echo $i === $page ? 'active' : ''; ?>">
-                        <?php echo $i; ?>
-                    </a>
-                <?php endfor; ?>
+                </div>
             </div>
-        <?php endif; ?>
+
+            <!-- Search and Filters -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="search" 
+                                   placeholder="Search by session name..." 
+                                   value="<?php echo htmlspecialchars($searchTerm); ?>">
+                        </div>
+                        <div class="col-md-3">
+                            <select name="trainer" class="form-select">
+                                <option value="">All Trainers</option>
+                                <?php foreach ($trainers as $trainer): ?>
+                                    <option value="<?php echo $trainer['trainer_id']; ?>" <?php echo $filterTrainer == $trainer['trainer_id'] ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($trainer['trainer_name']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select name="status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="Scheduled" <?php echo $filterStatus === 'Scheduled' ? 'selected' : ''; ?>>Scheduled</option>
+                                <option value="Ongoing" <?php echo $filterStatus === 'Ongoing' ? 'selected' : ''; ?>>Ongoing</option>
+                                <option value="Completed" <?php echo $filterStatus === 'Completed' ? 'selected' : ''; ?>>Completed</option>
+                                <option value="Cancelled" <?php echo $filterStatus === 'Cancelled' ? 'selected' : ''; ?>>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                        <?php if (!empty($searchTerm) || !empty($filterTrainer) || !empty($filterStatus)): ?>
+                            <div class="col-md-12">
+                                <a href="<?php echo APP_URL; ?>modules/sessions/" class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-times"></i> Clear Filters
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </form>
+                </div>
+            </div>
+
+            <?php displayMessage(); ?>
+
+            <!-- Sessions Table -->
+            <div class="card">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Session Name</th>
+                                <th>Trainer</th>
+                                <th>Date & Time</th>
+                                <th>Gym</th>
+                                <th>Attendees</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($sessions) > 0): ?>
+                                <?php foreach ($sessions as $session): ?>
+                                    <tr>
+                                        <td><strong><?php echo htmlspecialchars($session['session_name']); ?></strong></td>
+                                        <td><?php echo htmlspecialchars($session['trainer_name'] ?? 'N/A'); ?></td>
+                                        <td>
+                                            <?php echo date('M d, Y', strtotime($session['session_date'])); ?><br>
+                                            <small><?php echo date('H:i', strtotime($session['session_time'])); ?></small>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($session['gym_name'] ?? 'N/A'); ?></td>
+                                        <td>
+                                            <span class="badge bg-info"><?php echo $session['current_attendees']; ?>/<?php echo $session['max_capacity']; ?></span>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            $statusClass = 'secondary';
+                                            if ($session['status'] === 'Scheduled') $statusClass = 'info';
+                                            elseif ($session['status'] === 'Ongoing') $statusClass = 'warning';
+                                            elseif ($session['status'] === 'Completed') $statusClass = 'success';
+                                            elseif ($session['status'] === 'Cancelled') $statusClass = 'danger';
+                                            ?>
+                                            <span class="badge bg-<?php echo $statusClass; ?>">
+                                                <?php echo htmlspecialchars($session['status']); ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="view.php?id=<?php echo $session['session_id']; ?>" class="btn btn-sm btn-info">View</a>
+                                            <?php if ($_SESSION['user_type'] === 'admin' || ($_SESSION['user_type'] === 'trainer' && $_SESSION['user_id'] == $session['trainer_id'])): ?>
+                                                <a href="edit.php?id=<?php echo $session['session_id']; ?>" class="btn btn-sm btn-warning">Edit</a>
+                                                <a href="delete.php?id=<?php echo $session['session_id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this session?');">Delete</a>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">No sessions found</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <?php if ($totalPages > 1): ?>
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                <a class="page-link" href="?page=<?php echo $i; ?>&search=<?php echo urlencode($searchTerm); ?>&trainer=<?php echo urlencode($filterTrainer); ?>&status=<?php echo urlencode($filterStatus); ?>">
+                                    <?php echo $i; ?>
+                                </a>
+                            </li>
+                        <?php endfor; ?>
+                    </ul>
+                </nav>
+            <?php endif; ?>
+
+        </main>
     </div>
 </div>
 

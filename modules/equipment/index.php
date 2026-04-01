@@ -44,11 +44,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = array_merge($params, [(int)$itemsPerPage, (int)$offset]);
-    $query .= " ORDER BY equipment_name ASC LIMIT ? OFFSET ?";
+    $query .= " ORDER BY equipment_name ASC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($countParams);
+    $stmt->execute($params);
     $equipment = $stmt->fetchAll();
 
 } catch (Exception $e) {

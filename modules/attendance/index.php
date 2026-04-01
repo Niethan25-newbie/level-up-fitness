@@ -7,10 +7,7 @@
 require_once dirname(dirname(dirname(__FILE__))) . '/includes/header.php';
 
 requireLogin();
-// Trainers and admins can access attendance
-if ($_SESSION['user_type'] !== 'admin' && $_SESSION['user_type'] !== 'trainer') {
-    die('Access denied: Only trainers and admins can access attendance.');
-}
+// All authenticated users can access attendance (members see their own, trainers/admins see all)
 
 $attendance = [];
 $message = getMessage();
@@ -37,6 +34,12 @@ try {
               JOIN members m ON ca.member_id = m.member_id
               WHERE 1=1";
     $params = [];
+
+    // Members can only see their own attendance
+    if ($_SESSION['user_type'] === 'member') {
+        $query .= " AND ca.member_id = ?";
+        $params[] = $_SESSION['user_id'];
+    }
 
     // Search filter
     if (!empty($searchTerm)) {
@@ -65,11 +68,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = array_merge($params, [(int)$itemsPerPage, (int)$offset]);
-    $query .= " ORDER BY ca.attendance_date DESC LIMIT ? OFFSET ?";
+    $query .= " ORDER BY ca.attendance_date DESC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($countParams);
+    $stmt->execute($params);
     $attendance = $stmt->fetchAll();
 
 } catch (Exception $e) {

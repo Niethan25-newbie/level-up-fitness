@@ -54,9 +54,7 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $query .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
-    $params[] = (int)$itemsPerPage;
-    $params[] = (int)$offset;
+    $query .= " ORDER BY created_at DESC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
 
     $stmt = $pdo->prepare($query);
     $stmt->execute($params);

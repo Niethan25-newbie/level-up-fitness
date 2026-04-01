@@ -106,9 +106,7 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $query .= " ORDER BY r.reservation_date DESC LIMIT ? OFFSET ?";
-    $params[] = (int)$itemsPerPage;
-    $params[] = (int)$offset;
+    $query .= " ORDER BY r.reservation_date DESC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
     $stmt->execute($params);

@@ -72,11 +72,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results - sort by popularity and name
-    $query .= " ORDER BY popularity_score DESC, template_name ASC LIMIT ? OFFSET ?";
-    $queryParams = array_merge($params, [(int)$itemsPerPage, (int)$offset]);
+    $query .= " ORDER BY popularity_score DESC, template_name ASC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($queryParams);
+    $stmt->execute($params);
     $templates = $stmt->fetchAll();
 
 } catch (Exception $e) {

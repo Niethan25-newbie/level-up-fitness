@@ -72,13 +72,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = $params;
-    $countParams[] = (int)$itemsPerPage;
-    $countParams[] = (int)$offset;
-    $query .= " ORDER BY payment_date DESC LIMIT ? OFFSET ?";
+    $query .= " ORDER BY payment_date DESC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($countParams);
+    $stmt->execute($params);
     $payments = $stmt->fetchAll();
 
 } catch (Exception $e) {

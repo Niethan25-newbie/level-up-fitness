@@ -58,11 +58,10 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = array_merge($params, [(int)$itemsPerPage, (int)$offset]);
-    $query .= " GROUP BY c.class_id ORDER BY c.class_schedule ASC LIMIT ? OFFSET ?";
+    $query .= " GROUP BY c.class_id ORDER BY c.class_schedule ASC LIMIT " . (int)$itemsPerPage . " OFFSET " . (int)$offset;
     
     $stmt = $pdo->prepare($query);
-    $stmt->execute($countParams);
+    $stmt->execute($params);
     $classes = $stmt->fetchAll();
 
 } catch (Exception $e) {
