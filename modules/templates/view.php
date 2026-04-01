@@ -260,7 +260,7 @@ try {
 
 <style>
 .schedule-timeline {
-    border-left: 3px solid #667eea;
+    border-left: 3px solid #1a1a1a;
     padding-left: 0;
 }
 

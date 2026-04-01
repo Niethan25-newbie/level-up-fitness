@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_reset']) && $
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_reset']) && $
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
         .card-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
             border-radius: 15px 15px 0 0 !important;
             color: white;
             padding: 30px;
@@ -169,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_reset']) && $
         }
         .credential-label {
             font-weight: 600;
-            color: #667eea;
+            color: #ffffff;
         }
     </style>
 </head>
