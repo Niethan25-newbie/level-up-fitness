@@ -234,6 +234,49 @@ CREATE TABLE activity_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
+-- 12. TRAINING_SESSIONS TABLE (Group Sessions)
+-- ============================================
+CREATE TABLE training_sessions (
+    session_id INT PRIMARY KEY AUTO_INCREMENT,
+    session_name VARCHAR(255) NOT NULL,
+    trainer_id VARCHAR(50) NOT NULL,
+    gym_id VARCHAR(50) NOT NULL,
+    session_date DATE NOT NULL,
+    session_time TIME NOT NULL,
+    duration INT NOT NULL COMMENT 'Duration in minutes',
+    max_capacity INT NOT NULL DEFAULT 20,
+    description LONGTEXT,
+    status ENUM('Scheduled', 'Ongoing', 'Completed', 'Cancelled') NOT NULL DEFAULT 'Scheduled',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (trainer_id) REFERENCES trainers(trainer_id) ON DELETE CASCADE,
+    FOREIGN KEY (gym_id) REFERENCES gyms(gym_id) ON DELETE CASCADE,
+    INDEX idx_session_date (session_date),
+    INDEX idx_trainer_id (trainer_id),
+    INDEX idx_gym_id (gym_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- 13. TRAINING_SESSION_ATTENDEES TABLE
+-- ============================================
+CREATE TABLE training_session_attendees (
+    attendee_id INT PRIMARY KEY AUTO_INCREMENT,
+    session_id INT NOT NULL,
+    member_id VARCHAR(50) NOT NULL,
+    check_in_time DATETIME,
+    check_out_time DATETIME,
+    attendance_status ENUM('Present', 'Absent', 'Late', 'Cancelled') NOT NULL DEFAULT 'Present',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES training_sessions(session_id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE,
+    UNIQUE KEY unique_session_member (session_id, member_id),
+    INDEX idx_session_id (session_id),
+    INDEX idx_member_id (member_id),
+    INDEX idx_attendance_status (attendance_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
 -- SAMPLE DATA (Optional)
 -- ============================================
 

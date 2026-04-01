@@ -84,6 +84,12 @@ $userRole = $_SESSION['user_type'] ?? 'member';
                         <span>Reservations</span>
                     </a>
                 </li>
+                <li>
+                    <a class="luf-sidebar__link" href="<?php echo APP_URL; ?>modules/sessions/">
+                        <span class="luf-sidebar__link-icon"><i class="fas fa-calendar-alt"></i></span>
+                        <span>Group Sessions</span>
+                    </a>
+                </li>
             </ul>
         </div>
         <?php endif; ?>
