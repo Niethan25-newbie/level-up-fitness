@@ -7,7 +7,6 @@
 require_once dirname(dirname(dirname(__FILE__))) . '/includes/header.php';
 
 requireLogin();
-requireRole('admin');
 
 $payments = [];
 $message = getMessage();

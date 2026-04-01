@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Attendance Management - List View
+ * Member Personal Attendance - View Own Attendance Records
  * Level Up Fitness - Gym Management System
  */
 
@@ -8,16 +8,9 @@ require_once dirname(dirname(dirname(__FILE__))) . '/includes/header.php';
 
 requireLogin();
 
-// Members should use the dedicated my-attendance.php page
-if ($_SESSION['user_type'] === 'member') {
-    header('Location: ' . APP_URL . 'modules/attendance/my-attendance.php');
-    exit;
-}
-
-// Only trainers and admins can access this page
-if ($_SESSION['user_type'] !== 'trainer' && $_SESSION['user_type'] !== 'admin') {
-    setMessage('Access denied: Only trainers and admins can access this page.', 'error');
-    header('Location: ' . APP_URL . 'dashboard/');
+// Only members can access this page
+if ($_SESSION['user_type'] !== 'member') {
+    header('Location: ' . APP_URL . 'modules/attendance/');
     exit;
 }
 
@@ -34,36 +27,30 @@ $totalPages = 1;
 $classes = [];
 
 try {
-    // Get all classes for filter
-    $classStmt = $pdo->prepare("SELECT class_id, class_name FROM classes WHERE class_status = 'Active' ORDER BY class_name");
-    $classStmt->execute();
+    // Get only classes this member is enrolled in
+    $classStmt = $pdo->prepare("
+        SELECT DISTINCT c.class_id, c.class_name 
+        FROM classes c
+        JOIN class_attendance ca ON c.class_id = ca.class_id
+        WHERE ca.member_id = ? AND c.class_status = 'Active'
+        ORDER BY c.class_name
+    ");
+    $classStmt->execute([$_SESSION['user_id']]);
     $classes = $classStmt->fetchAll();
 
-    // Build query with joins
+    // Build query with joins - members only see their own attendance
     $query = "SELECT ca.*, c.class_name, m.member_name, m.email
               FROM class_attendance ca
               JOIN classes c ON ca.class_id = c.class_id
               JOIN members m ON ca.member_id = m.member_id
-              WHERE 1=1";
-    $params = [];
-
-    // Members can only see their own attendance
-    if ($_SESSION['user_type'] === 'member') {
-        $query .= " AND ca.member_id = ?";
-        $params[] = $_SESSION['user_id'];
-    }
-    // Trainers can only see attendance for members in their classes
-    elseif ($_SESSION['user_type'] === 'trainer') {
-        $query .= " AND c.trainer_id = ?";
-        $params[] = $_SESSION['user_id'];
-    }
-    // Admins can see all attendance (no filter needed)
+              WHERE ca.member_id = ?";
+    $params = [$_SESSION['user_id']];
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (ca.attendance_id LIKE ? OR m.member_name LIKE ? OR c.class_name LIKE ?)";
+        $query .= " AND (c.class_name LIKE ?)";
         $search = "%$searchTerm%";
-        $params = array_merge($params, [$search, $search, $search]);
+        $params[] = $search;
     }
 
     // Class filter
@@ -92,8 +79,29 @@ try {
     $stmt->execute($params);
     $attendance = $stmt->fetchAll();
 
+    // Get member stats
+    $statsQuery = "SELECT 
+                    attendance_status,
+                    COUNT(*) as count
+                   FROM class_attendance
+                   WHERE member_id = ?
+                   GROUP BY attendance_status";
+    $statsStmt = $pdo->prepare($statsQuery);
+    $statsStmt->execute([$_SESSION['user_id']]);
+    $stats = $statsStmt->fetchAll();
+    
+    $presentCount = 0;
+    $absentCount = 0;
+    foreach ($stats as $stat) {
+        if ($stat['attendance_status'] === 'Present') {
+            $presentCount = $stat['count'];
+        } elseif ($stat['attendance_status'] === 'Absent') {
+            $absentCount = $stat['count'];
+        }
+    }
+
 } catch (Exception $e) {
-    setMessage('Error loading attendance: ' . $e->getMessage(), 'error');
+    setMessage('Error loading your attendance: ' . $e->getMessage(), 'error');
 }
 ?>
 
@@ -104,8 +112,8 @@ try {
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
             
             <div class="page-header">
-                <h1><i class="fas fa-clipboard-list"></i> Class Attendance</h1>
-                <p>Track member attendance in classes</p>
+                <h1><i class="fas fa-clipboard-check"></i> My Attendance</h1>
+                <p>View your class attendance records</p>
             </div>
 
             <?php displayMessage(); ?>
@@ -114,7 +122,7 @@ try {
                 <div class="col-md-4">
                     <div class="card bg-primary text-white">
                         <div class="card-body">
-                            <h6 class="card-title mb-0"><i class="fas fa-list"></i> Total Records</h6>
+                            <h6 class="card-title mb-0"><i class="fas fa-list"></i> Total Classes</h6>
                             <h3><?php echo $totalRecords; ?></h3>
                         </div>
                     </div>
@@ -123,13 +131,7 @@ try {
                     <div class="card bg-success text-white">
                         <div class="card-body">
                             <h6 class="card-title mb-0"><i class="fas fa-check"></i> Present</h6>
-                            <h3>
-                                <?php 
-                                $presentStmt = $pdo->prepare("SELECT COUNT(*) as count FROM class_attendance WHERE attendance_status = 'Present'");
-                                $presentStmt->execute();
-                                echo $presentStmt->fetch()['count'];
-                                ?>
-                            </h3>
+                            <h3><?php echo $presentCount; ?></h3>
                         </div>
                     </div>
                 </div>
@@ -137,13 +139,7 @@ try {
                     <div class="card bg-danger text-white">
                         <div class="card-body">
                             <h6 class="card-title mb-0"><i class="fas fa-times"></i> Absent</h6>
-                            <h3>
-                                <?php 
-                                $absentStmt = $pdo->prepare("SELECT COUNT(*) as count FROM class_attendance WHERE attendance_status = 'Absent'");
-                                $absentStmt->execute();
-                                echo $absentStmt->fetch()['count'];
-                                ?>
-                            </h3>
+                            <h3><?php echo $absentCount; ?></h3>
                         </div>
                     </div>
                 </div>
@@ -155,7 +151,7 @@ try {
                         <div class="col-md-4">
                             <form method="GET" class="d-flex" role="search">
                                 <input class="form-control search-input me-2" type="search" name="search" 
-                                       placeholder="Search member or class..." 
+                                       placeholder="Search class..." 
                                        value="<?php echo htmlspecialchars($searchTerm); ?>"
                                        aria-label="Search">
                                 <button class="btn btn-primary" type="submit">
@@ -163,7 +159,7 @@ try {
                                 </button>
                             </form>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
                             <select class="form-select" name="class" onchange="window.location='?class=' + this.value + (this.value ? '' : '')">
                                 <option value="">All Classes</option>
                                 <?php foreach ($classes as $cls): ?>
@@ -174,22 +170,12 @@ try {
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="col-md-2">
+                        <div class="col-md-4">
                             <select class="form-select" onchange="window.location='?status=' + this.value">
                                 <option value="">All Status</option>
                                 <option value="Present" <?php echo $filterStatus === 'Present' ? 'selected' : ''; ?>>Present</option>
                                 <option value="Absent" <?php echo $filterStatus === 'Absent' ? 'selected' : ''; ?>>Absent</option>
                             </select>
-                        </div>
-                        <div class="col-md-4 text-end">
-                            <?php if (!empty($searchTerm) || !empty($filterClass) || !empty($filterStatus)): ?>
-                                <a href="<?php echo APP_URL; ?>modules/attendance/" class="btn btn-secondary me-2">
-                                    <i class="fas fa-times"></i> Clear Filters
-                                </a>
-                            <?php endif; ?>
-                            <a href="<?php echo APP_URL; ?>modules/attendance/add.php" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Record Attendance
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -197,50 +183,32 @@ try {
 
             <div class="card">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="fas fa-table"></i> Attendance Records</h5>
+                    <h5 class="mb-0"><i class="fas fa-table"></i> Your Attendance Records</h5>
                 </div>
                 <div class="card-body">
                     <?php if (empty($attendance)): ?>
                         <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> No attendance records found.
-                            <a href="<?php echo APP_URL; ?>modules/attendance/add.php">Record attendance</a>
+                            <i class="fas fa-info-circle"></i> No attendance records yet. Once you attend a class, your attendance will appear here.
                         </div>
                     <?php else: ?>
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Attendance ID</th>
-                                        <th>Member Name</th>
-                                        <th>Class</th>
+                                        <th>Class Name</th>
                                         <th>Date</th>
                                         <th>Status</th>
-                                        <th>Enrollment Date</th>
-                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($attendance as $record): ?>
                                         <tr>
-                                            <td><code><?php echo htmlspecialchars($record['attendance_id']); ?></code></td>
-                                            <td><?php echo htmlspecialchars($record['member_name']); ?></td>
                                             <td><?php echo htmlspecialchars($record['class_name']); ?></td>
                                             <td><?php echo formatDate($record['attendance_date']); ?></td>
                                             <td>
-                                                <span class="badge badge-<?php echo strtolower(str_replace('Present', 'success', str_replace('Absent', 'danger', $record['attendance_status']))); ?>">
+                                                <span class="badge badge-<?php echo $record['attendance_status'] === 'Present' ? 'success' : 'danger'; ?>">
                                                     <?php echo htmlspecialchars($record['attendance_status']); ?>
                                                 </span>
-                                            </td>
-                                            <td><?php echo formatDate($record['enrollment_date']); ?></td>
-                                            <td>
-                                                <a href="<?php echo APP_URL; ?>modules/attendance/edit.php?id=<?php echo $record['attendance_id']; ?>" 
-                                                   class="btn btn-sm btn-warning" title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="<?php echo APP_URL; ?>modules/attendance/delete.php?id=<?php echo $record['attendance_id']; ?>" 
-                                                   class="btn btn-sm btn-danger btn-delete" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -260,8 +228,8 @@ try {
                                         </li>
                                     <?php endif; ?>
 
-                                    <?php for ($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++): ?>
-                                        <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                        <li class="page-item <?php echo $page == $i ? 'active' : ''; ?>">
                                             <a class="page-link" href="?page=<?php echo $i; ?><?php echo !empty($searchTerm) ? '&search=' . urlencode($searchTerm) : ''; ?>">
                                                 <?php echo $i; ?>
                                             </a>
@@ -282,8 +250,9 @@ try {
                     <?php endif; ?>
                 </div>
             </div>
+
         </main>
     </div>
 </div>
 
-<?php require_once dirname(dirname(dirname(__FILE__))) . '/includes/footer.php'; ?>
+<?php include dirname(dirname(dirname(__FILE__))) . '/includes/footer.php'; ?>

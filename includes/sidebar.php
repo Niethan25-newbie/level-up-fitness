@@ -117,9 +117,9 @@ $userRole = $_SESSION['user_type'] ?? 'member';
                     </a>
                 </li>
                 <li>
-                    <a class="luf-sidebar__link" href="<?php echo APP_URL; ?>modules/attendance/">
+                    <a class="luf-sidebar__link" href="<?php echo APP_URL; ?>modules/attendance/<?php echo $userRole === 'member' ? 'my-attendance.php' : ''; ?>">
                         <span class="luf-sidebar__link-icon"><i class="fas fa-clipboard-check"></i></span>
-                        <span>Attendance</span>
+                        <span><?php echo $userRole === 'member' ? 'My Attendance' : 'Attendance'; ?></span>
                     </a>
                 </li>
             </ul>
