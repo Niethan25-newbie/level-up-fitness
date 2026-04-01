@@ -46,6 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($memberId)) {
     }
     if (empty($formData['contact_number'])) {
         $errors['contact_number'] = 'Contact number is required';
+    } elseif (!isValidPhone($formData['contact_number'])) {
+        $errors['contact_number'] = 'Invalid phone number format (use format like 09123456789 or +639123456789)';
     }
     if (empty($formData['membership_type'])) {
         $errors['membership_type'] = 'Membership type is required';

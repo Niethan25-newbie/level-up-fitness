@@ -7,11 +7,13 @@
 require_once dirname(dirname(dirname(__FILE__))) . '/includes/header.php';
 
 requireLogin();
+requireRole('admin');
 
 $classId = sanitize($_GET['id'] ?? '');
 $class = null;
 $trainer = null;
 $members = [];
+$availableMembers = [];
 
 if (!empty($classId)) {
     try {
@@ -42,11 +44,78 @@ if (!empty($classId)) {
         $memberStmt->execute([$classId]);
         $members = $memberStmt->fetchAll();
 
+        // Get members not yet enrolled (for enrollment dropdown)
+        $availableMemberStmt = $pdo->prepare("
+            SELECT m.member_id, m.member_name 
+            FROM members m
+            WHERE m.status = 'Active'
+            AND m.member_id NOT IN (
+                SELECT ca.member_id FROM class_attendance ca WHERE ca.class_id = ?
+            )
+            ORDER BY m.member_name
+        ");
+        $availableMemberStmt->execute([$classId]);
+        $availableMembers = $availableMemberStmt->fetchAll();
+
     } catch (Exception $e) {
         setMessage('Error loading class: ' . $e->getMessage(), 'error');
     }
 }
+
+// Handle member enrollment
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['enroll_member'])) {
+    $memberId = sanitize($_POST['member_id'] ?? '');
+    
+    if (empty($memberId)) {
+        setMessage('Please select a member to enroll', 'error');
+    } else {
+        try {
+            // Check if member is already enrolled
+            $checkStmt = $pdo->prepare("SELECT * FROM class_attendance WHERE class_id = ? AND member_id = ?");
+            $checkStmt->execute([$classId, $memberId]);
+            if ($checkStmt->rowCount() > 0) {
+                setMessage('Member is already enrolled in this class', 'warning');
+            } else {
+                // Check if class is at capacity
+                if (count($members) >= $class['max_capacity']) {
+                    setMessage('Class is at maximum capacity', 'error');
+                } else {
+                    // Enroll member
+                    $enrollStmt = $pdo->prepare("
+                        INSERT INTO class_attendance (class_id, member_id, enrollment_date)
+                        VALUES (?, ?, NOW())
+                    ");
+                    $enrollStmt->execute([$classId, $memberId]);
+                    
+                    logAction($_SESSION['user_id'], 'ENROLL_CLASS', 'Classes', 'Enrolled member ' . $memberId . ' in class ' . $classId);
+                    setMessage('Member enrolled successfully!', 'success');
+                    redirect('view.php?id=' . $classId);
+                }
+            }
+        } catch (Exception $e) {
+            setMessage('Error enrolling member: ' . $e->getMessage(), 'error');
+        }
+    }
+}
+
+// Handle member unenrollment
+if (isset($_GET['unenroll_member']) && isset($_GET['id'])) {
+    $memberId = sanitize($_GET['unenroll_member']);
+    $classId = sanitize($_GET['id']);
+    
+    try {
+        $unenrollStmt = $pdo->prepare("DELETE FROM class_attendance WHERE class_id = ? AND member_id = ?");
+        $unenrollStmt->execute([$classId, $memberId]);
+        
+        logAction($_SESSION['user_id'], 'UNENROLL_CLASS', 'Classes', 'Removed member ' . $memberId . ' from class ' . $classId);
+        setMessage('Member removed from class successfully!', 'success');
+        redirect('view.php?id=' . $classId);
+    } catch (Exception $e) {
+        setMessage('Error removing member: ' . $e->getMessage(), 'error');
+    }
+}
 ?>
+
 
 <div class="container-fluid">
     <div class="row">
@@ -109,6 +178,31 @@ if (!empty($classId)) {
                             <h5 class="mb-0">Class Members (<?php echo count($members); ?>/<?php echo $class['max_capacity']; ?>)</h5>
                         </div>
                         <div class="card-body">
+                            <?php if (!empty($availableMembers) && count($members) < $class['max_capacity']): ?>
+                            <div class="alert alert-info mb-3">
+                                <strong>Enroll Members:</strong>
+                            </div>
+                            <form method="POST" class="mb-4">
+                                <div class="input-group">
+                                    <select name="member_id" class="form-control" required>
+                                        <option value="">Select a member to enroll...</option>
+                                        <?php foreach ($availableMembers as $member): ?>
+                                            <option value="<?php echo $member['member_id']; ?>">
+                                                <?php echo htmlspecialchars($member['member_name']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <button type="submit" name="enroll_member" value="1" class="btn btn-success">
+                                        <i class="fas fa-user-plus"></i> Enroll
+                                    </button>
+                                </div>
+                            </form>
+                            <?php elseif (count($members) >= $class['max_capacity']): ?>
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> Class is at maximum capacity
+                            </div>
+                            <?php endif; ?>
+
                             <?php if (empty($members)): ?>
                                 <div class="alert alert-info">
                                     <i class="fas fa-info-circle"></i> No members enrolled yet.
@@ -121,7 +215,7 @@ if (!empty($classId)) {
                                                 <th>Member Name</th>
                                                 <th>Email</th>
                                                 <th>Enrolled</th>
-                                                <th>Action</th>
+                                                <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -132,8 +226,14 @@ if (!empty($classId)) {
                                                     <td><?php echo formatDate($member['enrollment_date']); ?></td>
                                                     <td>
                                                         <a href="<?php echo APP_URL; ?>modules/members/view.php?id=<?php echo $member['member_id']; ?>" 
-                                                           class="btn btn-sm btn-info">
-                                                            <i class="fas fa-link"></i>
+                                                           class="btn btn-sm btn-info" title="View Member">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="view.php?id=<?php echo $classId; ?>&unenroll_member=<?php echo $member['member_id']; ?>" 
+                                                           class="btn btn-sm btn-danger" 
+                                                           onclick="return confirm('Remove this member from the class?')" 
+                                                           title="Remove from class">
+                                                            <i class="fas fa-user-minus"></i>
                                                         </a>
                                                     </td>
                                                 </tr>

@@ -28,6 +28,29 @@ function isValidEmail($email) {
 }
 
 /**
+ * Validate phone number format
+ * Supports: 09XXXXXXXXXX, +639XXXXXXXXXX, +63-9-XXXX-XXXX, (09) XXXX-XXXX, and other formats
+ */
+function isValidPhone($phone) {
+    // Remove common formatting characters
+    $cleaned = preg_replace('/[\s\-\(\)\.]+/', '', $phone);
+    
+    // Check if it's a valid international format or local format
+    // Filipino: 09XXXXXXXXXX (11 digits) or +639XXXXXXXXXX (13 digits with +63)
+    // International: +1-XXXXXXXXXX (10-15 digits is typical)
+    if (preg_match('/^\+?[1-9]\d{7,14}$/', $cleaned)) {
+        return true;
+    }
+    
+    // Local format: starts with 09, exactly 11 digits
+    if (preg_match('/^09\d{9}$/', $cleaned)) {
+        return true;
+    }
+    
+    return false;
+}
+
+/**
  * Hash password
  */
 function hashPassword($password) {

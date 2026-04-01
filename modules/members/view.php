@@ -10,6 +10,7 @@ requireLogin();
 
 $memberId = sanitize($_GET['id'] ?? '');
 $member = null;
+$trainer = null;
 $attendance = [];
 $payments = [];
 
@@ -22,6 +23,13 @@ if (!empty($memberId)) {
         if (!$member) {
             setMessage('Member not found', 'error');
             redirect(APP_URL . 'modules/members/');
+        }
+
+        // Get assigned trainer if any
+        if (!empty($member['trainer_id'])) {
+            $trainerStmt = $pdo->prepare("SELECT * FROM trainers WHERE trainer_id = ?");
+            $trainerStmt->execute([$member['trainer_id']]);
+            $trainer = $trainerStmt->fetch();
         }
 
         // Get recent attendance
@@ -146,7 +154,39 @@ if (!empty($memberId)) {
                             </p>
                         </div>
                     </div>
-                </div>
+
+                    <?php if ($trainer): ?>
+                    <div class="card mb-3">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="mb-0">Assigned Trainer</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>
+                                <strong><?php echo htmlspecialchars($trainer['trainer_name']); ?></strong><br>
+                                <code><?php echo htmlspecialchars($trainer['trainer_id']); ?></code>
+                            </p>
+                            <hr>
+                            <p>
+                                <strong>Specialization:</strong><br>
+                                <span class="badge bg-info"><?php echo htmlspecialchars($trainer['specialization']); ?></span>
+                            </p>
+                            <hr>
+                            <p>
+                                <strong>Email:</strong><br>
+                                <a href="mailto:<?php echo htmlspecialchars($trainer['email']); ?>">
+                                    <?php echo htmlspecialchars($trainer['email']); ?>
+                                </a>
+                            </p>
+                            <hr>
+                            <div>
+                                <a href="<?php echo APP_URL; ?>modules/trainers/view.php?id=<?php echo $trainer['trainer_id']; ?>" 
+                                   class="btn btn-sm btn-info">
+                                    <i class="fas fa-link"></i> View Trainer Profile
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?>
 
                 <div class="col-md-8">
                     <div class="card mb-3">

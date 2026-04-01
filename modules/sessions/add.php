@@ -41,9 +41,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validation
     $errors = [];
     if (empty($sessionName)) $errors[] = 'Session name is required';
-    if (empty($trainerId)) $errors[] = 'Trainer is required';
+    if (empty($trainerId)) {
+        $errors[] = 'Trainer is required';
+    } else {
+        // Check if trainer exists and is active
+        $trainerCheckStmt = $pdo->prepare("SELECT trainer_id, status FROM trainers WHERE trainer_id = ?");
+        $trainerCheckStmt->execute([$trainerId]);
+        $trainerData = $trainerCheckStmt->fetch();
+        if (!$trainerData) {
+            $errors[] = 'Selected trainer does not exist';
+        } elseif (isset($trainerData['status']) && $trainerData['status'] !== 'Active') {
+            $errors[] = 'Selected trainer is not currently active';
+        }
+    }
     if (empty($gymId)) $errors[] = 'Gym is required';
-    if (empty($sessionDate)) $errors[] = 'Session date is required';
+    if (empty($sessionDate)) {
+        $errors[] = 'Session date is required';
+    } else {
+        // Validate date format and prevent past dates
+        $sessionDateObj = DateTime::createFromFormat('Y-m-d', $sessionDate);
+        if (!$sessionDateObj || $sessionDateObj->format('Y-m-d') !== $sessionDate) {
+            $errors[] = 'Invalid date format';
+        } elseif ($sessionDateObj < new DateTime('today')) {
+            $errors[] = 'Session date cannot be in the past';
+        } elseif ($sessionDateObj > new DateTime('+90 days')) {
+            $errors[] = 'Sessions can only be scheduled up to 90 days in advance';
+        }
+    }
     if (empty($sessionTime)) $errors[] = 'Session time is required';
     if (empty($duration)) $errors[] = 'Duration is required';
     if (empty($maxCapacity)) $errors[] = 'Max capacity is required';

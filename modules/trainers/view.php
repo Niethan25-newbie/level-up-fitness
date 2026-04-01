@@ -24,14 +24,22 @@ if (!empty($trainerId)) {
             redirect(APP_URL . 'modules/trainers/');
         }
 
-        // Get assigned members through workout plans
+        // Get assigned members - both directly assigned and through workout plans
         $membersStmt = $pdo->prepare("
-            SELECT DISTINCT m.* FROM members m
+            SELECT DISTINCT m.member_id, m.member_name, m.email, m.contact_number
+            FROM members m
+            WHERE m.trainer_id = ?
+            AND m.status = 'Active'
+            UNION
+            SELECT DISTINCT m.member_id, m.member_name, m.email, m.contact_number
+            FROM members m
             JOIN workout_plans wp ON m.member_id = wp.member_id
             WHERE wp.trainer_id = ?
-            LIMIT 10
+            AND m.status = 'Active'
+            ORDER BY member_name
+            LIMIT 25
         ");
-        $membersStmt->execute([$trainerId]);
+        $membersStmt->execute([$trainerId, $trainerId]);
         $assignedMembers = $membersStmt->fetchAll();
 
         // Get sessions assigned to this trainer
