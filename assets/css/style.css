@@ -489,6 +489,32 @@ body {
     border: 1px solid rgba(255, 77, 77, 0.3);
 }
 
+/* Bootstrap badge overrides for better contrast */
+.badge.bg-info {
+    background: #00bcd4 !important;
+    color: #000000 !important;
+}
+
+.badge.bg-warning {
+    background: #ffc107 !important;
+    color: #000000 !important;
+}
+
+.badge.bg-danger {
+    background: #f44336 !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-success {
+    background: #4caf50 !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-secondary {
+    background: #757575 !important;
+    color: #ffffff !important;
+}
+
 /* ==================== BUTTONS ==================== */
 
 .btn {
@@ -902,7 +928,7 @@ body {
 }
 
 .login-box h1 {
-    color: #ffffff !important;
+    color: #000000 !important;
 }
 
 /* Login page alert styling */
