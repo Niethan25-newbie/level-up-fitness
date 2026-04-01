@@ -80,8 +80,7 @@ backups/
 mail/
 mailqueue/
 
-# Session Files
-sessions/
+# Session Files (PHP sessions only - not modules/sessions)
 tmp/sessions/
 
 # User Uploaded Files (except core uploads if needed)
