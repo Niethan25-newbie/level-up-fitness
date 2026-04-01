@@ -51,8 +51,8 @@ try {
 
     // Search filter - search by member name or ID
     if (!empty($searchTerm)) {
-        $query .= " AND (member_id LIKE ? OR payment_id LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (LOWER(member_id) LIKE ? OR LOWER(payment_id) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search]);
     }
 

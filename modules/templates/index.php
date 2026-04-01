@@ -47,8 +47,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (template_name LIKE ? OR description LIKE ? OR goal LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (LOWER(template_name) LIKE ? OR LOWER(description) LIKE ? OR LOWER(goal) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search]);
     }
 

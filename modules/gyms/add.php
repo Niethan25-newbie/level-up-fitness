@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             // Generate gym ID
-            $gymId = generateID(GYM_ID_PREFIX);
+            $gymId = generateUniqueID(GYM_ID_PREFIX, 'gyms');
 
             // Insert gym
             $stmt = $pdo->prepare("

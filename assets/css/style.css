@@ -442,7 +442,7 @@ body {
 /* ==================== BADGES & STATUS PILLS ==================== */
 
 .badge {
-    border-radius: 0;
+    border-radius: 4px;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -453,40 +453,72 @@ body {
     border: 1px solid;
 }
 
+/* Status Badges - Account/Membership Status */
 .badge-active {
-    background: rgba(255, 255, 255, 0.10);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
 }
 
 .badge-inactive {
-    background: rgba(255, 255, 255, 0.04);
-    color: #888;
-    border: 1px solid #2e2e2e;
+    background: rgba(158, 158, 158, 0.15);
+    color: #9e9e9e;
+    border: 1px solid rgba(158, 158, 158, 0.3);
 }
 
 .badge-expired {
-    background: rgba(255, 77, 77, 0.12);
-    color: #ff4d4d;
-    border: 1px solid rgba(255, 77, 77, 0.3);
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
 }
 
 .badge-pending {
-    background: rgba(255, 193, 7, 0.12);
+    background: rgba(255, 193, 7, 0.15);
     color: #ffc107;
     border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
 .badge-paid {
-    background: rgba(255, 255, 255, 0.10);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
 }
 
 .badge-overdue {
-    background: rgba(255, 77, 77, 0.12);
-    color: #ff4d4d;
-    border: 1px solid rgba(255, 77, 77, 0.3);
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+/* Session & Event Status Badges */
+.badge-info {
+    background: rgba(33, 150, 243, 0.15);
+    color: #2196f3;
+    border: 1px solid rgba(33, 150, 243, 0.3);
+}
+
+.badge-warning {
+    background: rgba(255, 152, 0, 0.15);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.badge-success {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.badge-danger {
+    background: rgba(244, 67, 54, 0.15);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.badge-secondary {
+    background: rgba(158, 158, 158, 0.15);
+    color: #9e9e9e;
+    border: 1px solid rgba(158, 158, 158, 0.3);
 }
 
 /* Bootstrap badge overrides for better contrast */

@@ -181,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $reservationId = generateID(RESERVATION_ID_PREFIX);
+            $reservationId = generateUniqueID(RESERVATION_ID_PREFIX, 'reservations');
 
             $stmt = $pdo->prepare("
                 INSERT INTO reservations (

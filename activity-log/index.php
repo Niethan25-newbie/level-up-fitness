@@ -37,8 +37,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (details LIKE ? OR user_id LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (LOWER(details) LIKE ? OR LOWER(user_id) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params[] = $search;
         $params[] = $search;
     }

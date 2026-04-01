@@ -25,8 +25,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (trainer_name LIKE ? OR email LIKE ? OR specialization LIKE ? OR contact_number LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (LOWER(trainer_name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(specialization) LIKE ? OR LOWER(contact_number) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search, $search]);
     }
 

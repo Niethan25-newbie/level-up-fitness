@@ -25,8 +25,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (gym_name LIKE ? OR location LIKE ? OR contact_number LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (LOWER(gym_name) LIKE ? OR LOWER(location) LIKE ? OR LOWER(contact_number) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search]);
     }
 

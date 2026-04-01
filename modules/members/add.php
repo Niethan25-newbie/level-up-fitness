@@ -58,8 +58,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userStmt->execute([$formData['email'], $password, 'member']);
             $userId = $pdo->lastInsertId();
 
-            // Generate member ID
-            $memberId = generateID(MEMBER_ID_PREFIX);
+            // Generate member ID with collision detection
+            $memberId = generateUniqueID(MEMBER_ID_PREFIX, 'members');
 
             // Insert member
             $stmt = $pdo->prepare("

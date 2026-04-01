@@ -254,4 +254,199 @@ function getDaysUntilExpiry($joinDate, $membershipType) {
     return $interval->invert ? -$interval->days : $interval->days;
 }
 
+/**
+ * Generate consistent status badge HTML
+ * Maps various status values to consistent badge styling
+ */
+function generateStatusBadge($status) {
+    $status = trim($status);
+    
+    // Standardize status mapping
+    $statusMap = [
+        // Membership & Account Status
+        'Active' => ['class' => 'badge-active', 'text' => 'Active'],
+        'Inactive' => ['class' => 'badge-inactive', 'text' => 'Inactive'],
+        'Expired' => ['class' => 'badge-expired', 'text' => 'Expired'],
+        'Pending' => ['class' => 'badge-pending', 'text' => 'Pending'],
+        
+        // Payment Status
+        'Paid' => ['class' => 'badge-paid', 'text' => 'Paid'],
+        'Overdue' => ['class' => 'badge-overdue', 'text' => 'Overdue'],
+        'Unpaid' => ['class' => 'badge-inactive', 'text' => 'Unpaid'],
+        
+        // Session & Event Status
+        'Scheduled' => ['class' => 'badge-info', 'text' => 'Scheduled'],
+        'Ongoing' => ['class' => 'badge-warning', 'text' => 'Ongoing'],
+        'Completed' => ['class' => 'badge-success', 'text' => 'Completed'],
+        'Cancelled' => ['class' => 'badge-danger', 'text' => 'Cancelled'],
+        
+        // Attendance Status
+        'Present' => ['class' => 'badge-success', 'text' => 'Present'],
+        'Absent' => ['class' => 'badge-danger', 'text' => 'Absent'],
+        'Late' => ['class' => 'badge-warning', 'text' => 'Late'],
+        'Excused' => ['class' => 'badge-info', 'text' => 'Excused'],
+    ];
+    
+    // Use mapped value or default to status as-is
+    if (isset($statusMap[$status])) {
+        $badge = $statusMap[$status];
+        $class = $badge['class'];
+        $text = $badge['text'];
+    } else {
+        // Fallback: use lowercase status with badge- prefix
+        $class = 'badge-' . strtolower(str_replace(' ', '-', $status));
+        $text = $status;
+    }
+    
+    return '<span class="badge ' . htmlspecialchars($class) . '">' . htmlspecialchars($text) . '</span>';
+}
+
+/**
+ * Generate Bootstrap status badge HTML (for bg-* utility classes)
+ */
+function generateBSStatusBadge($status) {
+    $status = trim($status);
+    
+    $statusMap = [
+        'Active' => ['class' => 'bg-success', 'text' => 'Active'],
+        'Inactive' => ['class' => 'bg-secondary', 'text' => 'Inactive'],
+        'Expired' => ['class' => 'bg-danger', 'text' => 'Expired'],
+        'Pending' => ['class' => 'bg-warning', 'text' => 'Pending'],
+        'Paid' => ['class' => 'bg-success', 'text' => 'Paid'],
+        'Overdue' => ['class' => 'bg-danger', 'text' => 'Overdue'],
+        'Unpaid' => ['class' => 'bg-secondary', 'text' => 'Unpaid'],
+        'Scheduled' => ['class' => 'bg-info', 'text' => 'Scheduled'],
+        'Ongoing' => ['class' => 'bg-warning', 'text' => 'Ongoing'],
+        'Completed' => ['class' => 'bg-success', 'text' => 'Completed'],
+        'Cancelled' => ['class' => 'bg-danger', 'text' => 'Cancelled'],
+        'Present' => ['class' => 'bg-success', 'text' => 'Present'],
+        'Absent' => ['class' => 'bg-danger', 'text' => 'Absent'],
+        'Late' => ['class' => 'bg-warning', 'text' => 'Late'],
+        'Excused' => ['class' => 'bg-info', 'text' => 'Excused'],
+    ];
+    
+    if (isset($statusMap[$status])) {
+        $badge = $statusMap[$status];
+        return '<span class="badge ' . htmlspecialchars($badge['class']) . '">' . htmlspecialchars($badge['text']) . '</span>';
+    }
+    
+    return '<span class="badge bg-secondary">' . htmlspecialchars($status) . '</span>';
+}
+
+/**
+ * Check if ID already exists in table
+ */
+function idExists($table, $idValue) {
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare("SELECT 1 FROM " . $table . " WHERE id = ? LIMIT 1");
+        $stmt->execute([$idValue]);
+        return $stmt->rowCount() > 0;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+/**
+ * Generate unique ID with collision detection
+ */
+function generateUniqueID($prefix, $table = null) {
+    $maxAttempts = 10;
+    $attempt = 0;
+    
+    while ($attempt < $maxAttempts) {
+        $id = generateID($prefix);
+        
+        // If no table specified, just return the ID
+        if (is_null($table)) {
+            return $id;
+        }
+        
+        // Check if ID already exists
+        if (!idExists($table, $id)) {
+            return $id;
+        }
+        
+        $attempt++;
+    }
+    
+    // Fallback: use microtime for guaranteed uniqueness
+    return $prefix . round(microtime(true) * 10000);
+}
+
+/**
+ * Generate standardized pagination HTML
+ */
+function generatePagination($currentPage, $totalPages, $baseUrl = '') {
+    $html = '';
+    
+    if ($totalPages <= 1) {
+        return $html;
+    }
+    
+    // Parse current URL if not provided
+    if (empty($baseUrl)) {
+        $baseUrl = $_SERVER['REQUEST_URI'];
+        // Remove page parameter if it exists
+        $baseUrl = preg_replace('/[?&]page=\d+/', '', $baseUrl);
+        $separator = (strpos($baseUrl, '?') === false) ? '?' : '&';
+    } else {
+        $separator = (strpos($baseUrl, '?') === false) ? '?' : '&';
+    }
+    
+    // Determine separator
+    if (isset($_GET) && !empty($_GET)) {
+        $separator = '&';
+    } else {
+        $separator = '?';
+    }
+    
+    $pageLinks = PAGINATION_LINKS;  // Usually 5
+    $html .= '<nav aria-label="Page navigation">';
+    $html .= '<ul class="pagination justify-content-center">';
+    
+    // Previous button
+    if ($currentPage > 1) {
+        $html .= '<li class="page-item"><a class="page-link" href="' . htmlspecialchars($baseUrl) . $separator . 'page=1">First</a></li>';
+        $html .= '<li class="page-item"><a class="page-link" href="' . htmlspecialchars($baseUrl) . $separator . 'page=' . ($currentPage - 1) . '">Previous</a></li>';
+    } else {
+        $html .= '<li class="page-item disabled"><span class="page-link">First</span></li>';
+        $html .= '<li class="page-item disabled"><span class="page-link">Previous</span></li>';
+    }
+    
+    // Page numbers
+    $start = max(1, $currentPage - floor($pageLinks / 2));
+    $end = min($totalPages, $start + $pageLinks - 1);
+    
+    if ($start > 1) {
+        $html .= '<li class="page-item"><span class="page-link">...</span></li>';
+    }
+    
+    for ($i = $start; $i <= $end; $i++) {
+        if ($i === $currentPage) {
+            $html .= '<li class="page-item active"><span class="page-link">' . $i . '</span></li>';
+        } else {
+            $html .= '<li class="page-item"><a class="page-link" href="' . htmlspecialchars($baseUrl) . $separator . 'page=' . $i . '">' . $i . '</a></li>';
+        }
+    }
+    
+    if ($end < $totalPages) {
+        $html .= '<li class="page-item"><span class="page-link">...</span></li>';
+    }
+    
+    // Next button
+    if ($currentPage < $totalPages) {
+        $html .= '<li class="page-item"><a class="page-link" href="' . htmlspecialchars($baseUrl) . $separator . 'page=' . ($currentPage + 1) . '">Next</a></li>';
+        $html .= '<li class="page-item"><a class="page-link" href="' . htmlspecialchars($baseUrl) . $separator . 'page=' . $totalPages . '">Last</a></li>';
+    } else {
+        $html .= '<li class="page-item disabled"><span class="page-link">Next</span></li>';
+        $html .= '<li class="page-item disabled"><span class="page-link">Last</span></li>';
+    }
+    
+    $html .= '</ul>';
+    $html .= '</nav>';
+    
+    return $html;
+}
+
 ?>

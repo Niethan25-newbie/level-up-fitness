@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $planId = generateID(WORKOUT_PLAN_ID_PREFIX);
+            $planId = generateUniqueID(WORKOUT_PLAN_ID_PREFIX, 'workout_plans');
             
             // Build weekly schedule and plan details
             $weeklySchedule = json_encode([

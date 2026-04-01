@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $attendanceId = generateID(ATTENDANCE_ID_PREFIX);
+            $attendanceId = generateUniqueID(ATTENDANCE_ID_PREFIX, 'attendance');
 
             // First, ensure member is enrolled in class
             $existingEnroll = $pdo->prepare("SELECT * FROM class_attendance WHERE class_id = ? AND member_id = ?");

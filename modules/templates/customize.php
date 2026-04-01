@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Create plan if no errors
     if (empty($errors)) {
         try {
-            $planId = generateID(WORKOUT_PLAN_ID_PREFIX);
+            $planId = generateUniqueID(WORKOUT_PLAN_ID_PREFIX, 'workout_plans');
             
             // Prepare schedule with customizations or use template schedule
             $baseSchedule = json_decode($template['weekly_schedule'], true) ?? [];

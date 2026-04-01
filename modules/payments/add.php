@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             // Generate payment ID
-            $paymentId = generateID(PAYMENT_ID_PREFIX);
+            $paymentId = generateUniqueID(PAYMENT_ID_PREFIX, 'payments');
 
             // Insert payment
             $stmt = $pdo->prepare("

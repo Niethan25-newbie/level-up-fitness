@@ -30,8 +30,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (c.class_id LIKE ? OR c.class_name LIKE ? OR t.trainer_name LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (c.class_id LIKE ? OR LOWER(c.class_name) LIKE ? OR LOWER(t.trainer_name) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search]);
     }
 

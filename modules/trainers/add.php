@@ -54,8 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userStmt->execute([$formData['email'], $password, 'trainer']);
             $userId = $pdo->lastInsertId();
 
-            // Generate trainer ID
-            $trainerId = generateID(TRAINER_ID_PREFIX);
+            // Generate trainer ID with collision detection
+            $trainerId = generateUniqueID(TRAINER_ID_PREFIX, 'trainers');
 
             // Insert trainer
             $stmt = $pdo->prepare("

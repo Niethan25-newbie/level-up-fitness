@@ -43,8 +43,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (ts.session_name LIKE ? OR t.trainer_name LIKE ? OR g.gym_name LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (LOWER(ts.session_name) LIKE ? OR LOWER(t.trainer_name) LIKE ? OR LOWER(g.gym_name) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search]);
     }
 

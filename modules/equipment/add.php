@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $equipmentId = generateID(EQUIPMENT_ID_PREFIX);
+            $equipmentId = generateUniqueID(EQUIPMENT_ID_PREFIX, 'equipment');
 
             $stmt = $pdo->prepare("
                 INSERT INTO equipment (

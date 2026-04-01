@@ -28,8 +28,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (member_name LIKE ? OR email LIKE ? OR contact_number LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (LOWER(member_name) LIKE ? OR LOWER(email) LIKE ? OR LOWER(contact_number) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search]);
     }
 
@@ -152,8 +152,7 @@ try {
                                             <td><?php echo formatDate($member['join_date']); ?></td>
                                             <td>
                                                 <?php 
-                                                    $statusClass = 'badge-' . strtolower($member['status']);
-                                                    echo '<span class="badge ' . $statusClass . '">' . htmlspecialchars($member['status']) . '</span>';
+                                                    echo generateStatusBadge($member['status']);
                                                     if ($daysLeft > 0 && $daysLeft <= 7) {
                                                         echo '<br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Expires in ' . $daysLeft . ' days</small>';
                                                     }

@@ -59,8 +59,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (r.reservation_id LIKE ? OR m.member_name LIKE ? OR e.equipment_name LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (r.reservation_id LIKE ? OR LOWER(m.member_name) LIKE ? OR LOWER(e.equipment_name) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search]);
     }
 

@@ -43,8 +43,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (wp.workout_plan_id LIKE ? OR m.member_name LIKE ? OR wp.plan_name LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (wp.workout_plan_id LIKE ? OR LOWER(m.member_name) LIKE ? OR LOWER(wp.plan_name) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search]);
     }
 

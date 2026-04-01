@@ -26,8 +26,8 @@ try {
 
     // Search filter
     if (!empty($searchTerm)) {
-        $query .= " AND (equipment_id LIKE ? OR equipment_name LIKE ? OR equipment_category LIKE ?)";
-        $search = "%$searchTerm%";
+        $query .= " AND (equipment_id LIKE ? OR LOWER(equipment_name) LIKE ? OR LOWER(equipment_category) LIKE ?)";
+        $search = "%".strtolower($searchTerm)."%";
         $params = array_merge($params, [$search, $search, $search]);
     }
 

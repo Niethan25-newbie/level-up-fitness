@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         try {
-            $classId = generateID(CLASS_ID_PREFIX);
+            $classId = generateUniqueID(CLASS_ID_PREFIX, 'classes');
 
             $stmt = $pdo->prepare("
                 INSERT INTO classes (
