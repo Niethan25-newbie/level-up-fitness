@@ -107,8 +107,8 @@ try {
 
     // Get paginated results
     $query .= " ORDER BY r.reservation_date DESC LIMIT ? OFFSET ?";
-    $params[] = $itemsPerPage;
-    $params[] = $offset;
+    $params[] = (int)$itemsPerPage;
+    $params[] = (int)$offset;
     
     $stmt = $pdo->prepare($query);
     $stmt->execute($params);

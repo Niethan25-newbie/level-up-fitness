@@ -62,7 +62,7 @@ try {
 
     // Get paginated results
     $query .= " ORDER BY created_at DESC LIMIT ? OFFSET ?";
-    $countParams = array_merge($params, [$itemsPerPage, $offset]);
+    $countParams = array_merge($params, [(int)$itemsPerPage, (int)$offset]);
     
     $stmt = $pdo->prepare($query);
     $stmt->execute($countParams);

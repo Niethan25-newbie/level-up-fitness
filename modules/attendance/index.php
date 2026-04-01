@@ -65,7 +65,7 @@ try {
     $totalPages = ceil($totalRecords / $itemsPerPage);
 
     // Get paginated results
-    $countParams = array_merge($params, [$itemsPerPage, $offset]);
+    $countParams = array_merge($params, [(int)$itemsPerPage, (int)$offset]);
     $query .= " ORDER BY ca.attendance_date DESC LIMIT ? OFFSET ?";
     
     $stmt = $pdo->prepare($query);

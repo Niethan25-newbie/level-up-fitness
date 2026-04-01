@@ -73,7 +73,7 @@ try {
 
     // Get paginated results - sort by popularity and name
     $query .= " ORDER BY popularity_score DESC, template_name ASC LIMIT ? OFFSET ?";
-    $queryParams = array_merge($params, [$itemsPerPage, $offset]);
+    $queryParams = array_merge($params, [(int)$itemsPerPage, (int)$offset]);
     
     $stmt = $pdo->prepare($query);
     $stmt->execute($queryParams);

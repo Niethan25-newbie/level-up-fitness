@@ -73,8 +73,8 @@ try {
 
     // Get paginated results
     $countParams = $params;
-    $countParams[] = $itemsPerPage;
-    $countParams[] = $offset;
+    $countParams[] = (int)$itemsPerPage;
+    $countParams[] = (int)$offset;
     $query .= " ORDER BY payment_date DESC LIMIT ? OFFSET ?";
     
     $stmt = $pdo->prepare($query);

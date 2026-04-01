@@ -69,8 +69,8 @@ try {
 
     // Get paginated results
     $countParams = $params;
-    $countParams[] = $itemsPerPage;
-    $countParams[] = $offset;
+    $countParams[] = (int)$itemsPerPage;
+    $countParams[] = (int)$offset;
     $query .= " ORDER BY ts.session_date DESC, ts.session_time DESC LIMIT ? OFFSET ?";
     
     $stmt = $pdo->prepare($query);
