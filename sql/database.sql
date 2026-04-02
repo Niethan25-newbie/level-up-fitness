@@ -84,6 +84,7 @@ CREATE TABLE gyms (
 -- ============================================
 CREATE TABLE workout_plans (
     workout_plan_id VARCHAR(50) PRIMARY KEY,
+    template_id VARCHAR(50),
     member_id VARCHAR(50) NOT NULL,
     trainer_id VARCHAR(50),
     plan_name VARCHAR(255) NOT NULL,
@@ -91,10 +92,12 @@ CREATE TABLE workout_plans (
     plan_details LONGTEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (template_id) REFERENCES workout_templates(template_id) ON DELETE SET NULL,
     FOREIGN KEY (member_id) REFERENCES members(member_id) ON DELETE CASCADE,
     FOREIGN KEY (trainer_id) REFERENCES trainers(trainer_id) ON DELETE SET NULL,
     INDEX idx_member_id (member_id),
-    INDEX idx_trainer_id (trainer_id)
+    INDEX idx_trainer_id (trainer_id),
+    INDEX idx_template_id (template_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================
@@ -274,6 +277,28 @@ CREATE TABLE training_session_attendees (
     INDEX idx_session_id (session_id),
     INDEX idx_member_id (member_id),
     INDEX idx_attendance_status (attendance_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================
+-- 14. WORKOUT_TEMPLATES TABLE
+-- ============================================
+CREATE TABLE workout_templates (
+    template_id VARCHAR(50) PRIMARY KEY,
+    template_name VARCHAR(255) NOT NULL,
+    template_type VARCHAR(100) NOT NULL,
+    difficulty_level VARCHAR(50) NOT NULL,
+    description LONGTEXT NOT NULL,
+    goal VARCHAR(255) NOT NULL,
+    duration_weeks INT NOT NULL,
+    exercises_count INT NOT NULL,
+    equipment_required VARCHAR(255),
+    popularity_score INT DEFAULT 0,
+    is_active TINYINT DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_difficulty_level (difficulty_level),
+    INDEX idx_template_type (template_type),
+    INDEX idx_is_active (is_active)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================

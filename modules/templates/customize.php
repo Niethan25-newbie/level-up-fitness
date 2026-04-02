@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $planId = generateUniqueID(WORKOUT_PLAN_ID_PREFIX, 'workout_plans');
             
             // Prepare schedule with customizations or use template schedule
-            $baseSchedule = json_decode($template['weekly_schedule'], true) ?? [];
+            $baseSchedule = isset($template['weekly_schedule']) ? (json_decode($template['weekly_schedule'], true) ?? []) : [];
             $weeklySchedule = json_encode($baseSchedule);
 
             // Use template details or custom details
@@ -307,7 +307,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <label class="form-label"><i class="fas fa-calendar-alt"></i> Template Schedule Preview</label>
                                     <div class="alert alert-light border">
                                         <?php 
-                                            $schedule = json_decode($template['weekly_schedule'], true) ?? [];
+                                            $schedule = isset($template['weekly_schedule']) ? (json_decode($template['weekly_schedule'], true) ?? []) : [];
                                             if (!empty($schedule)):
                                                 foreach ($schedule as $day => $exercises):
                                         ?>

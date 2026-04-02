@@ -29,8 +29,8 @@ try {
         redirect(APP_URL . 'modules/templates/');
     }
 
-    // Parse schedule JSON
-    $schedule = json_decode($template['weekly_schedule'], true) ?? [];
+    // Parse schedule JSON if it exists
+    $schedule = isset($template['weekly_schedule']) ? (json_decode($template['weekly_schedule'], true) ?? []) : [];
 
 } catch (Exception $e) {
     setMessage('Error loading template: ' . $e->getMessage(), 'error');
